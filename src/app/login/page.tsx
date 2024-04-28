@@ -1,9 +1,11 @@
 "use client";
+import { loginUser } from "@/utils/actions/loginuser";
+import { signIn } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 
-type FormValues = {
+export type FormValues = {
   email: string;
   password: string;
 };
@@ -17,9 +19,21 @@ const LoginPage = () => {
 
   const onSubmit = async (data: FormValues) => {
     console.log(data);
+    try {
+      const res= await loginUser(data)
+      console.log(res)
+      if(res.accessToken){
+        alert(res.message);
+        localStorage.setItem("accessToken",res.accessToken)
+      }
+    } catch (err: any) {
+      console.error(err.message);
+      throw new Error(err.message);
+    }
   };
 
   return (
+    
     <div className="my-10">
       <h1 className="text-center text-4xl mb-5">
         Login <span className="text-accent">Here</span>
@@ -77,7 +91,7 @@ const LoginPage = () => {
           </form>
           <p className="text-center">Or Sign Up Using</p>
           <div className="flex justify-center mb-10 mt-2">
-            <button className="btn btn-circle ">
+            <button onClick={()=>signIn("google")} className="btn btn-circle ">
               <Image
                 src="https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-webinar-optimizing-for-success-google-business-webinar-13.png"
                 width={50}
@@ -91,6 +105,9 @@ const LoginPage = () => {
                 width={35}
                 height={35}
                 alt="github logo"
+                onClick={()=>signIn("github",{
+                  callbackUrl:`${process.env.URL}/dashboard`
+                })}
               />
             </button>
           </div>
